@@ -1,0 +1,153 @@
+data:text/html;utf-8,
+<!DOCTYPE html>
+
+<head>
+    <title>Multi-collection</title>
+    <style>
+        body {
+            background-color: #1F1F1F;
+            color: #CCCCCC;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #loader_container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        #loader {
+            border: 69px solid #1F1F1F;
+            border-radius: 50%;
+            border-top: 69px solid #FF5100;
+            border-bottom: 69px solid #3F3A60;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #root {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 36px
+        }
+
+        .game_container {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #CCCCCC;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .image_container {
+            height: 228px;
+            position: relative;
+        }
+
+        .game_image {
+            max-width: 64%;
+            max-height: 192px;
+            display: block;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .game_title {
+            position: absolute;
+            bottom: 0;
+            margin: 0 0 24px 4px;
+        }
+
+        .game_owners {
+            position: absolute;
+            bottom: 0;
+            margin: 0 0 4px 4px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="loader_container">
+        <div id="loader"></div>
+    </div>
+    <div id="tot"></div>
+    <div id="root"></div>
+    <script>
+        const loadData = async () => {
+            const games = new Map();
+            let [resFlap, resChillo, resPoot, resQ] = await Promise.all([
+                getCollection(games, "Flappington"),
+                getCollection(games, "chillodude"),
+                getCollection(games, "PootPoot13"),
+                getCollection(games, "Superspac3"),
+            ])
+            const sortedGames = [...games.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name));
+            document.getElementById("tot").innerText = "Total amount of games: " + games.size;
+            const root = document.getElementById("root");
+            for (const game of sortedGames) {
+                const game_container = document.createElement("div");
+                game_container.classList.add("game_container")
+                const image_container = document.createElement("div");
+                image_container.classList.add("image_container")
+                game_container.appendChild(image_container);
+                const game_image = document.createElement("IMG");
+                game_image.setAttribute("src", game[1].img);
+                game_image.classList.add("game_image");
+                image_container.appendChild(game_image);
+                const game_title = document.createElement("div");
+                game_title.classList.add("game_title");
+                game_title.appendChild(document.createTextNode(game[1].name));
+                game_container.appendChild(game_title);
+                const game_owners = document.createElement("div");
+                game_owners.classList.add("game_owners");
+                game_owners.appendChild(document.createTextNode("Owned by " + game[1].users));
+                game_container.appendChild(game_owners);
+                root.appendChild(game_container);
+            }
+            document.getElementById("loader_container").style.display = "none";
+        }
+        const getCollection = async (games, user) => {
+            var xmlDoc;
+            const response = await fetch('https://boardgamegeek.com/xmlapi2/collection?username=' + user)
+                .then(response => response.text())
+                .then(str => new window.DOMParser().parseFromString(str, "application/xml"))
+                .then(data => xmlDoc = data);
+            const user_games = xmlDoc.getElementsByTagName("item");
+            for (const user_game of user_games) {
+                if (user_game.getElementsByTagName("status")[0].attributes.getNamedItem("own").value == 1 || user_game.getElementsByTagName("status")[0].attributes.getNamedItem("preordered").value == 1) {
+                    const game_id = user_game.attributes.getNamedItem("objectid").value;
+                    if (games.has(game_id)) {
+                        const existing_game = games.get(user_game.attributes.getNamedItem("objectid").value);
+                        const new_users = existing_game.users;
+                        new_users.push(user);
+                        games.set(game_id, { name: existing_game.name, img: existing_game.img, users: new_users })
+                    }
+                    else {
+                        const game_name = user_game.getElementsByTagName("name")[0].childNodes[0].nodeValue;
+                        const game_img = user_game.getElementsByTagName("thumbnail")[0] && user_game.getElementsByTagName("thumbnail")[0].childNodes[0] ? user_game.getElementsByTagName("thumbnail")[0].childNodes[0].nodeValue : "https://drive.google.com/thumbnail?id=1nHLntUYvJmxU6K9RfepamvnCULxqSst8";
+                        games.set(game_id, { name: game_name, img: game_img, users: [user] });
+                    }
+                }
+            }
+        }
+        loadData();
+    </script>
+</body>
