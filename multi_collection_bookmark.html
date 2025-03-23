@@ -1,10 +1,11 @@
-data:text/html;utf-8,
+<!--data:text/html;utf-8,-->
 <!DOCTYPE html>
 
 <head>
     <title>Multi-collection</title>
     <style>
         body {
+            margin: 0;
             background-color: #1F1F1F;
             color: #CCCCCC;
             font-family: Arial, Helvetica, sans-serif;
@@ -14,6 +15,7 @@ data:text/html;utf-8,
             display: flex;
             justify-content: center;
             align-items: center;
+            position: absolute;
             width: 100%;
             height: 100%;
         }
@@ -99,7 +101,7 @@ data:text/html;utf-8,
                 getCollection(games, "PootPoot13"),
                 getCollection(games, "Superspac3"),
             ])
-            const sortedGames = [...games.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name));
+            const sortedGames = [...games.values()].sort((a, b) => a.name.localeCompare(b.name));
             document.getElementById("tot").innerText = "Total amount of games: " + games.size;
             const root = document.getElementById("root");
             for (const game of sortedGames) {
@@ -109,16 +111,16 @@ data:text/html;utf-8,
                 image_container.classList.add("image_container")
                 game_container.appendChild(image_container);
                 const game_image = document.createElement("IMG");
-                game_image.setAttribute("src", game[1].img);
+                game_image.setAttribute("src", game.img);
                 game_image.classList.add("game_image");
                 image_container.appendChild(game_image);
                 const game_title = document.createElement("div");
                 game_title.classList.add("game_title");
-                game_title.appendChild(document.createTextNode(game[1].name));
+                game_title.appendChild(document.createTextNode(game.name));
                 game_container.appendChild(game_title);
                 const game_owners = document.createElement("div");
                 game_owners.classList.add("game_owners");
-                game_owners.appendChild(document.createTextNode("Owned by " + game[1].users));
+                game_owners.appendChild(document.createTextNode("Owned by " + game.users));
                 game_container.appendChild(game_owners);
                 root.appendChild(game_container);
             }
@@ -138,12 +140,12 @@ data:text/html;utf-8,
                         const existing_game = games.get(user_game.attributes.getNamedItem("objectid").value);
                         const new_users = existing_game.users;
                         new_users.push(user);
-                        games.set(game_id, { name: existing_game.name, img: existing_game.img, users: new_users })
+                        games.set(game_id, { id: game_id, name: existing_game.name, img: existing_game.img, users: new_users })
                     }
                     else {
                         const game_name = user_game.getElementsByTagName("name")[0].childNodes[0].nodeValue;
                         const game_img = user_game.getElementsByTagName("thumbnail")[0] && user_game.getElementsByTagName("thumbnail")[0].childNodes[0] ? user_game.getElementsByTagName("thumbnail")[0].childNodes[0].nodeValue : "https://drive.google.com/thumbnail?id=1nHLntUYvJmxU6K9RfepamvnCULxqSst8";
-                        games.set(game_id, { name: game_name, img: game_img, users: [user] });
+                        games.set(game_id, { id: game_id, name: game_name, img: game_img, users: [user] });
                     }
                 }
             }
