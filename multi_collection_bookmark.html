@@ -4,9 +4,13 @@
 <head>
     <title>Multi-collection</title>
     <style>
+        html {
+            overflow-y: scroll;
+        }
+
         body {
             margin: 0;
-            background-color: #1F1F1F;
+            background-color: #2E2E34;
             color: #CCCCCC;
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -21,7 +25,7 @@
         }
 
         #loader {
-            border: 69px solid #1F1F1F;
+            border: 69px solid #2E2E34;
             border-radius: 50%;
             border-top: 69px solid #FF5100;
             border-bottom: 69px solid #3F3A60;
@@ -51,32 +55,69 @@
             }
         }
 
-        .search-container {
-            padding: 10px 0 10px 10px;
+        #main {
+            width: 80%;
+            display: block !important;
+            margin: auto;
+        }
+
+        #header {
+            padding: 24px 0 24px 0;
+        }
+
+        #search_container {
+            display: block;
+            width: 60%;
+            margin: 0 auto 0 auto;
+            position: relative;
         }
 
         input[type=text] {
-            padding: 6px;
-            margin-top: 8px;
+            padding: 8px;
+            width: 100%;
+            color: #B7B7BA;
             font-size: 17px;
+            background-color: #28282D;
+            border: 1px solid #CCCCCC;
+            border-radius: 6px;
+        }
+
+        #clear_search {
+            position: absolute;
+            right: 0px;
+            bottom: 0px;
             border: none;
+            margin: 0;
+            padding: 0;
+            width: auto;
+            height: 100%;
+            overflow: visible;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+
         }
 
         #tot {
-            padding: 0 0 10px 10px;
+            display: none;
+            margin: 0 6px 6px 10px;
+            text-align: right;
+            font-weight: lighter;
+            font-size: 15px;
         }
 
         #root {
             display: flex;
             flex-wrap: wrap;
-            gap: 36px
+            justify-content: center;
+            gap: 24px
         }
 
         .game_container {
             width: 300px;
             height: 300px;
             border: 2px solid #CCCCCC;
-            border-radius: 4px;
+            border-radius: 6px;
             position: relative;
         }
 
@@ -90,8 +131,7 @@
         }
 
         .game_image {
-            max-width: 64%;
-            max-height: 192px;
+            max-height: 228px;
             display: block;
             position: absolute;
             margin: auto;
@@ -102,15 +142,15 @@
         }
 
         .game_title {
-            position: absolute;
-            bottom: 0;
-            margin: 0 0 24px 4px;
+            margin: 0 6px 0 6px;
+            font-weight: bolder;
+            font-size: 18px;
         }
 
         .game_owners {
-            position: absolute;
-            bottom: 0;
-            margin: 0 0 4px 4px;
+            margin: 0 6px 0 6px;
+            font-weight: lighter;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -120,8 +160,11 @@
         <div id="loader"></div>
     </div>
     <div id="main" style="display: none;">
-        <div class="search-container">
-            <input id="search_title" type="text" placeholder="Game title..." name="search" oninput="filterGameName()">
+        <div id="header">
+            <div id="search_container">
+                <input id="search_title" type="text" placeholder="Game title" name="search" oninput="filterGameName()">
+                <button id="clear_search" onclick="clearSearch()">X</button>
+            </div>
         </div>
         <div id="filter_output"></div>
         <div id="tot"></div>
@@ -171,6 +214,7 @@
             document.getElementById("main").style.display = "inline";
             document.getElementById("loader_container").style.display = "none";
         }
+
         const getCollection = async (games, user) => {
             var xmlDoc;
             const response = await fetch('https://boardgamegeek.com/xmlapi2/collection?username=' + user)
@@ -195,16 +239,54 @@
                 }
             }
         }
+
         function filterGameName() {
             const search = document.getElementById("search_title").value;
             const game_containers = document.getElementsByClassName("game_container");
             for (const game of game_containers) {
-                if (game.childNodes[0].innerText.includes(search)) {
+                if (game.childNodes[0].innerText.includes(search) || substringLevenshtein(game.childNodes[0].innerText, search)) {
                     game.style.display = "inline";
                 }
                 else {
                     game.style.display = "none";
                 }
+            }
+        }
+
+        const substringLevenshtein = (game_name, search) => {
+            for (const sub of game_name.split(" ")) {
+                if (levenshteinDistance(sub, search) <= 1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        const levenshteinDistance = (game_name, search) => {
+            if (!game_name.length) return search.length;
+            if (!search.length) return game_name.length;
+            const matrix = [];
+            for (let i = 0; i <= search.length; i++) {
+                matrix[i] = [i];
+                for (let j = 1; j <= game_name.length; j++) {
+                    matrix[i][j] =
+                        i === 0
+                            ? j
+                            : Math.min(
+                                matrix[i - 1][j] + 1,
+                                matrix[i][j - 1] + 1,
+                                matrix[i - 1][j - 1] + (game_name[j - 1] === search[i - 1] ? 0 : 1)
+                            );
+                }
+            }
+            return matrix[search.length][game_name.length];
+        }
+
+        function clearSearch() {
+            document.getElementById("search_title").value = "";
+            const game_containers = document.getElementsByClassName("game_container");
+            for (const game of game_containers) {
+                game.style.display = "inline";
             }
         }
 
