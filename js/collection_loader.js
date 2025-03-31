@@ -15,14 +15,14 @@ const loadData = async () => {
         game_link.href = "https://boardgamegeek.com/boardgame/" + game.id;
         game_link.target = "_blank";
 
-        const game_container = document.createElement("div");
-        game_container.classList.add("game_container");
-        game_link.appendChild(game_container);
-
         const search_helper = document.createElement("div");
         search_helper.classList.add("search_helper");
         search_helper.innerText = game.name.replace(/[^1-9a-zA-Z ]/g, "").trim().toLowerCase();
-        game_container.appendChild(search_helper);
+        game_link.appendChild(search_helper);
+
+        const game_container = document.createElement("div");
+        game_container.classList.add("game_container");
+        game_link.appendChild(game_container);
 
         const image_container = document.createElement("div");
         image_container.classList.add("image_container")
@@ -80,8 +80,8 @@ const getCollection = async (games, user) => {
 
 function filterGameName() {
     const search = document.getElementById("search_title").value;
-    const game_containers = document.getElementsByClassName("game_container");
-    for (const game of game_containers) {
+    const game_links = document.getElementsByClassName("game_link");
+    for (const game of game_links) {
         if (game.childNodes[0].innerText.includes(search) || substringLevenshtein(game.childNodes[0].innerText, search)) {
             game.style.display = "inline";
         }
@@ -122,7 +122,7 @@ const levenshteinDistance = (game_name, search) => {
 
 function clearSearch() {
     document.getElementById("search_title").value = "";
-    const game_containers = document.getElementsByClassName("game_container");
+    const game_containers = document.getElementsByClassName("game_link");
     for (const game of game_containers) {
         game.style.display = "inline";
     }
