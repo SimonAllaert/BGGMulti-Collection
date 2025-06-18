@@ -5,6 +5,7 @@ const loadData = async () => {
         getCollection(games, "chillodude"),
         getCollection(games, "PootPoot13"),
         getCollection(games, "Superspac3"),
+        getCollection(games, "PrimeMinister98"),
     ]);
     const sortedGames = [...games.values()].sort((a, b) => a.name.localeCompare(b.name));
     document.getElementById("tot").innerText = "Total amount of games: " + games.size;
