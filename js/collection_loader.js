@@ -1,6 +1,6 @@
 const loadData = async () => {
     const games = new Map();
-    let [resFlap, resChillo, resPoot, resQ] = await Promise.all([
+    await Promise.all([
         getCollection(games, "Flappington"),
         getCollection(games, "chillodude"),
         getCollection(games, "PootPoot13"),
@@ -56,7 +56,7 @@ const loadData = async () => {
 
 const getCollection = async (games, user) => {
     var xmlDoc;
-    const response = await fetch('https://boardgamegeek.com/xmlapi2/collection?username=' + user)
+    await fetch('https://boardgamegeek.com/xmlapi2/collection?username=' + user)
         .then(response => response.text())
         .then(str => new window.DOMParser().parseFromString(str, "application/xml"))
         .then(data => xmlDoc = data);
