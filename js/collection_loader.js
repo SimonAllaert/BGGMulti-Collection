@@ -56,7 +56,12 @@ const loadData = async () => {
 
 const getCollection = async (games, user) => {
     var xmlDoc;
-    await fetch('https://boardgamegeek.com/xmlapi2/collection?username=' + user)
+    await fetch('https://boardgamegeek.com/xmlapi2/collection?username=' + user, {
+        method: 'get',
+        headers: new Headers({
+            'Authorization': 'Bearer f62ae0fe-e317-4ff8-bb55-b226489236cd'
+        })
+    })
         .then(response => response.text())
         .then(str => new window.DOMParser().parseFromString(str, "application/xml"))
         .then(data => xmlDoc = data);
