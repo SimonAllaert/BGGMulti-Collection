@@ -59,6 +59,11 @@
         padding: 24px 0 24px 0;
     }
     
+    #bgg-logo {
+        position: absolute;
+        width: 171px;
+    }
+
     #search_container {
         display: block;
         width: 60%;
